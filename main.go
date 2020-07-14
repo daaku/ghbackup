@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/google/go-github/v31/github"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
@@ -37,7 +39,12 @@ func cloneOrFetch(job refreshJob) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	err = repo.Fetch(&git.FetchOptions{})
+	err = repo.Fetch(&git.FetchOptions{
+		RefSpecs: []config.RefSpec{
+			"refs/heads/master:refs/heads/master",
+			"refs/heads/*:refs/remotes/origin/*",
+		},
+	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return errors.WithStack(err)
 	}
@@ -58,6 +65,7 @@ func run() error {
 	token := fs.String("token", "", "github token")
 	parallel := fs.Int("parallel", 5, "number of repositories to clone in parallel")
 	dest := fs.String("dest", "", "destination directory")
+	filter := fs.String("filter", "", "filter by repository name")
 	_ = fs.Parse(os.Args[1:])
 
 	if *token == "" {
@@ -96,6 +104,9 @@ func run() error {
 			return errors.WithStack(err)
 		}
 		for _, repo := range repos {
+			if *filter != "" && !strings.Contains(*repo.Name, *filter) {
+				continue
+			}
 			jobs <- refreshJob{
 				repo: *repo.SSHURL,
 				dest: filepath.Join(*dest, *repo.Name),
