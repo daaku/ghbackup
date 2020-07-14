@@ -41,8 +41,8 @@ func cloneOrFetch(job refreshJob) error {
 	}
 	err = repo.Fetch(&git.FetchOptions{
 		RefSpecs: []config.RefSpec{
-			"refs/heads/master:refs/heads/master",
-			"refs/heads/*:refs/remotes/origin/*",
+			"+refs/heads/master:refs/heads/master",
+			"+refs/heads/*:refs/remotes/origin/*",
 		},
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
