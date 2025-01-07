@@ -1,0 +1,14 @@
+name: Go
+on: [push]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: stable
+        cache-dependency-path: go.mod
+    - run: go get -v -t -d ./...
+    - run: go build -v ./...
