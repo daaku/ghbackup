@@ -1,11 +1,11 @@
 module github.com/daaku/ghbackup
 
-go 1.25.0
+go 1.26
 
 require (
+	github.com/daaku/serr v1.0.1
 	github.com/go-git/go-git/v5 v5.19.1
 	github.com/google/go-github/v89 v89.0.0
-	github.com/pkg/errors v0.9.1
 )
 
 require (

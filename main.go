@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/daaku/serr"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/google/go-github/v89/github"
-	"github.com/pkg/errors"
 )
 
 type refreshJob struct {
@@ -25,18 +25,18 @@ func cloneOrFetch(job refreshJob) error {
 	_, err := os.Stat(job.dest)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return errors.WithStack(err)
+			return serr.Wrap(err)
 		}
 
 		_, err = git.PlainClone(job.dest, true, &git.CloneOptions{
 			URL: job.repo,
 		})
-		return errors.WithStack(err)
+		return serr.Wrap(err)
 	}
 
 	repo, err := git.PlainOpen(job.dest)
 	if err != nil {
-		return errors.WithStack(err)
+		return serr.Wrap(err)
 	}
 	err = repo.Fetch(&git.FetchOptions{
 		RefSpecs: []config.RefSpec{
@@ -45,7 +45,7 @@ func cloneOrFetch(job refreshJob) error {
 		},
 	})
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return errors.WithStack(err)
+		return serr.Wrap(err)
 	}
 	return nil
 }
@@ -68,10 +68,10 @@ func run() error {
 	_ = fs.Parse(os.Args[1:])
 
 	if *token == "" {
-		return errors.New("-token must be provided")
+		return serr.Errorf("-token must be provided")
 	}
 	if *dest == "" {
-		return errors.New("-dest must be provided")
+		return serr.Errorf("-dest must be provided")
 	}
 
 	jobs := make(chan refreshJob, *parallel*10)
@@ -84,7 +84,7 @@ func run() error {
 	ctx := context.Background()
 	client, err := github.NewClient(github.WithAuthToken(*token))
 	if err != nil {
-		return errors.WithStack(err)
+		return serr.Wrap(err)
 	}
 
 	iter := client.Repositories.ListByAuthenticatedUserIter(ctx, &github.RepositoryListByAuthenticatedUserOptions{
@@ -92,7 +92,7 @@ func run() error {
 	})
 	for repo, err := range iter {
 		if err != nil {
-			return errors.WithStack(err)
+			return serr.Wrap(err)
 		}
 		if *filter != "" && !strings.Contains(*repo.Name, *filter) {
 			continue
