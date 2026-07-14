@@ -13,6 +13,7 @@ import (
 	"github.com/daaku/serr"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/google/go-github/v89/github"
 )
 
@@ -38,12 +39,23 @@ func cloneOrFetch(job refreshJob) error {
 	if err != nil {
 		return serr.Wrap(err)
 	}
-	err = repo.Fetch(&git.FetchOptions{
+	branches, err := repo.Branches()
+	if err != nil {
+		return serr.Wrap(err)
+	}
+	defer branches.Close()
+
+	fo := git.FetchOptions{
 		RefSpecs: []config.RefSpec{
-			"+refs/heads/master:refs/heads/master",
 			"+refs/heads/*:refs/remotes/origin/*",
 		},
+	}
+	branches.ForEach(func(r *plumbing.Reference) error {
+		name := r.Name().String()
+		fo.RefSpecs = append(fo.RefSpecs, config.RefSpec(fmt.Sprintf("+%s:%s", name, name)))
+		return nil
 	})
+	err = repo.Fetch(&fo)
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return serr.Wrap(err)
 	}
