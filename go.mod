@@ -4,9 +4,8 @@ go 1.25.0
 
 require (
 	github.com/go-git/go-git/v5 v5.19.1
-	github.com/google/go-github/v31 v31.0.0
+	github.com/google/go-github/v89 v89.0.0
 	github.com/pkg/errors v0.9.1
-	golang.org/x/oauth2 v0.36.0
 )
 
 require (
@@ -19,7 +18,7 @@ require (
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.0 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect

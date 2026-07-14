@@ -12,9 +12,8 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/pkg/errors"
-	"golang.org/x/oauth2"
 )
 
 type refreshJob struct {
@@ -83,41 +82,26 @@ func run() error {
 	}
 
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{
-			AccessToken: *token,
-		},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	client, err := github.NewClient(github.WithAuthToken(*token))
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
-	page := 0
-	for {
-		opts := github.RepositoryListOptions{
-			Affiliation: "owner",
-			ListOptions: github.ListOptions{
-				Page: page,
-			},
-		}
-		repos, resp, err := client.Repositories.List(ctx, "", &opts)
+	iter := client.Repositories.ListByAuthenticatedUserIter(ctx, &github.RepositoryListByAuthenticatedUserOptions{
+		Affiliation: "owner",
+	})
+	for repo, err := range iter {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		for _, repo := range repos {
-			if *filter != "" && !strings.Contains(*repo.Name, *filter) {
-				continue
-			}
-			jobs <- refreshJob{
-				repo: *repo.SSHURL,
-				dest: filepath.Join(*dest, *repo.Name),
-			}
+		if *filter != "" && !strings.Contains(*repo.Name, *filter) {
+			continue
 		}
-		if resp.NextPage == 0 {
-			break
+		jobs <- refreshJob{
+			repo: *repo.SSHURL,
+			dest: filepath.Join(*dest, *repo.Name),
 		}
-		page = resp.NextPage
 	}
-
 	close(jobs)
 	wg.Wait()
 
