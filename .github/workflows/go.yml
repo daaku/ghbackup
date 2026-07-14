@@ -5,10 +5,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-go@v6
-      with:
-        go-version: stable
-        cache-dependency-path: go.mod
-    - run: go get -v -t -d ./...
-    - run: go build -v ./...
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.mod
+      - run: go get -v -t -d ./...
+      - run: go build -v ./...
