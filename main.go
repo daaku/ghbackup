@@ -29,6 +29,7 @@ func cloneOrFetch(job refreshJob) error {
 			return serr.Wrap(err)
 		}
 
+		fmt.Println("Cloning", filepath.Base(job.dest))
 		_, err = git.PlainClone(job.dest, true, &git.CloneOptions{
 			URL: job.repo,
 		})
@@ -55,6 +56,7 @@ func cloneOrFetch(job refreshJob) error {
 		fo.RefSpecs = append(fo.RefSpecs, config.RefSpec(fmt.Sprintf("+%s:%s", name, name)))
 		return nil
 	})
+	fmt.Println("Fetching", filepath.Base(job.dest))
 	err = repo.Fetch(&fo)
 	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return serr.Wrap(err)
