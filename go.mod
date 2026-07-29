@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/daaku/serr v1.0.1
-	github.com/go-git/go-git/v5 v5.19.1
+	github.com/go-git/go-git/v5 v5.19.2
 	github.com/google/go-github/v89 v89.0.0
 )
 
